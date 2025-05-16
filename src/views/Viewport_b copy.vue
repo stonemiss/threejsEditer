@@ -13,24 +13,23 @@ const containerRef = ref(null);
 // const scene = shallowRef(null); //shallowRef只遍历一层
 const selectedObject = ref();
 const objectInfo = selectObjectInfoStore();
+const manager = new sceneManager(containerRef.value)
+const sceneStore = useSceneStore();
+sceneStore.setManager(manager)
 
 
-
-
+let myscene = null;
 let renderer = null;
 let camera = null;
 let transformControls = null;
 onMounted(() => {
-  const manager = new sceneManager(containerRef.value)
-  const sceneStore = useSceneStore();
-  sceneStore.setManager(manager)
-  renderer = manager.getRenderer();
-  camera = manager.getCamera();
-  transformControls = manager.transformControls;
-  
-  // sceneStore.selectedObject = selectedObject.value
+  myscene =   new sceneManager(containerRef.value);
+  renderer = myscene.getRenderer();
+  camera = myscene.getCamera();
+  transformControls = myscene.transformControls;
 
-
+  sceneStore.setScene(myscene.getScene());
+  sceneStore.flushModels();
   // 添加立方体
   const geometry = new THREE.BoxGeometry();
   const material1 = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -41,9 +40,9 @@ onMounted(() => {
 
   const cube2 = new THREE.Mesh(geometry, material2);
   cube2.position.x = 2;
-  sceneStore.addModelToScene(cube1)
-  // manager.addModel(cube1)
-  // manager.addModel(cube2)
+
+  myscene.addModel(cube1)
+  // myscene.addModel(cube2)
 
 
   // 点击选择对象
@@ -56,8 +55,8 @@ onMounted(() => {
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(manager.modlist);
-    console.log("manager.modlist---",manager.modlist);
+    const intersects = raycaster.intersectObjects(myscene.modlist);
+    console.log("myscene.modlist---",myscene.modlist);
 
 
     if (intersects.length > 0) {

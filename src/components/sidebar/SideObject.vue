@@ -45,8 +45,7 @@
         </el-col>
       </el-row>
     </div>
-    <div>{{objectInfo.transformData}}</div>
-    <div>{{transform}}</div>
+
   </el-card>
 </template>
 
@@ -56,11 +55,6 @@ const objectInfo = selectObjectInfoStore();
 
 
 
-// const transform = reactive({
-//   position: { ...objectInfo.transformData.position },
-//   rotation: { ...objectInfo.transformData.rotation },
-//   scale: { ...objectInfo.transformData.scale },
-// })
 const transform = reactive({
   position: objectInfo.transformData.position,
   rotation: objectInfo.transformData.rotation,
@@ -82,6 +76,9 @@ const transform = reactive({
 </script>
 
 <style lang="scss" scoped>
+:deep(.object-transform-panel){
+  box-shadow: none;
+}
 .object-transform-panel {
   position: absolute;
   right: 0;
