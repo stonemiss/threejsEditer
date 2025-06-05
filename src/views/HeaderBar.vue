@@ -10,11 +10,13 @@ import Toolbar from '@/components/Toolbar.vue'
 
 <style lang="scss" scoped>
 .header{
+  box-sizing: border-box;
   position: absolute;
   top: 0;
   left: 0;
   height: 40px;
   width: 100vw;
+  border-bottom: 1px solid #eeeeee;
 }
 </style>
 

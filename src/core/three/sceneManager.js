@@ -2,6 +2,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls'
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+
+
+
 
 // import Stats from 'three/examples/jsm/libs/stats.module.js' // 可选调试
 
@@ -36,7 +40,13 @@ export default class SceneManager {
     this.transformControls.addEventListener('dragging-changed', (event) => {
       this.controls.enabled = !event.value;
     });  
-
+    //  初始化 CSS2DRenderer
+    this.labelRenderer = new CSS2DRenderer();
+    this.labelRenderer.setSize(container.clientWidth, container.clientHeight);
+    this.labelRenderer.domElement.style.position = 'absolute';
+    this.labelRenderer.domElement.style.top = '0px';
+    this.labelRenderer.domElement.style.pointerEvents = 'none'; // 确保标签不阻挡鼠标事件
+    container.appendChild(this.labelRenderer.domElement);
 
     this._addDefaultLights()
     this._onResize()
@@ -70,11 +80,28 @@ export default class SceneManager {
     this.controls.update()
     // this.stats && this.stats.update()
     this.renderer.render(this.scene, this.camera)
+    this.labelRenderer.render(this.scene, this.camera);
+  }
+  _createLabeled(object3D){
+   console.log(object3D.uuid);
+    const div = document.createElement('div');
+    div.className = 'label';
+    div.textContent = object3D.name+"_"+object3D.uuid;
+    div.style.marginTop = '-1em';
+    div.style.backgroundColor = 'rgba(0,0,0,0.4)'
+    div.style.borderRadius = '20px'
+    div.style.padding = '10px'
+    div.style.color = '#ffffff'
+    const label = new CSS2DObject(div);
+    label.position.set(0, 1, 0); // 标签位置偏上
+    object3D.add(label);
+
   }
 
   //  添加模型
   addModel(object3D) {
     this.scene.add(object3D)
+    this._createLabeled(object3D)
     this.transformControls.attach(object3D)//添加模型自动聚焦
     modlist.push(object3D)
   }
