@@ -12,11 +12,8 @@ import Leftaside from './views/Leftaside.vue'
 
 <template>
   <HeaderBar />
-  <!-- <Viewport /> -->
-  
   <Leftaside/>
   <viewport_b/>
-  <!-- <Count/> -->
   <Sidebar />
 </template>
 

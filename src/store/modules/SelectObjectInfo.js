@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import * as THREE from 'three';
+import { store } from '@/store';
 
 export const selectObjectInfoStore = defineStore('objectInfo', {
   state: () => ({
+    selectedObjectId: null,
     count: 0,
     transformData :{
-      position: { x: 10, y: 20, z: 0 },
+      position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
       scale: { x: 1, y: 1, z: 1 },
     },
@@ -14,6 +16,9 @@ export const selectObjectInfoStore = defineStore('objectInfo', {
     }
   }),
   actions: {
+    selectObject(id) {
+      this.selectedObjectId = id;
+    },
     updateObjectInfo(object) {
       // this.transformData.position.x = object.position.x.toFixed(3);
       this.transformData.position.x = object.position.x;
@@ -36,3 +41,7 @@ export const selectObjectInfoStore = defineStore('objectInfo', {
   }
 })
 
+// setup 之外使用
+export function selectObjectInfoStoreWithOut() {
+  return selectObjectInfoStore(store);
+}

@@ -1,70 +1,71 @@
 
 <template>
-  <el-card class="object-transform-panel">
-    <div class="section">
-      <h4>位置 Position</h4>
-      <el-row :gutter="10">
-        <el-col :span="8">
-          <el-input-number v-model="transform.position.x" :step="0.1" label="X" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.position.y" :step="0.1" label="Y" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.position.z" :step="0.1" label="Z" size="small" />
-        </el-col>
-      </el-row>
-    </div>
-
-    <div class="section">
-      <h4>旋转 Rotation</h4>
-      <el-row :gutter="10">
-        <el-col :span="8">
-          <el-input-number v-model="transform.rotation.x" :step="1" label="X" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.rotation.y" :step="1" label="Y" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.rotation.z" :step="1" label="Z" size="small" />
-        </el-col>
-      </el-row>
-    </div>
-
-    <div class="section">
-      <h4>缩放 Scale</h4>
-      <el-row :gutter="10">
-        <el-col :span="8">
-          <el-input-number v-model="transform.scale.x" :step="0.1" :min="0.01" label="X" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.scale.y" :step="0.1" :min="0.01" label="Y" size="small" />
-        </el-col>
-        <el-col :span="8">
-          <el-input-number v-model="transform.scale.z" :step="0.1" :min="0.01" label="Z" size="small" />
-        </el-col>
-      </el-row>
-    </div>
-
-    <label>
-      颜色：
-      <input type="color" :value="colorHex" @input="changeColor" />
-    </label>
-    <div>
-      <span>显示标签：</span><el-switch v-model="showLabel" />
-    </div>
-  </el-card>
+  <div class="right-side">
+    <el-collapse  v-model="activeNames">
+      <el-collapse-item title="对象属性" name="1" :icon="CaretRight">
+        <div class="attribute-list">
+          <span>位置:</span>
+          <div>
+            <el-input v-model="transform.position.x" style="width: 60px" placeholder="x" @change="changePosition" />
+            <el-input v-model="transform.position.y" style="width: 60px" placeholder="y" @change="changePosition" />
+            <el-input v-model="transform.position.z" style="width: 60px" placeholder="z" @change="changePosition" />
+          </div>
+        </div>
+        <div class="attribute-list">
+          <span>旋转:</span>
+          <div>
+            <el-input v-model="transform.rotation.x" style="width: 60px" placeholder="x" @change="changePosition"/>
+            <el-input v-model="transform.rotation.y" style="width: 60px" placeholder="y" @change="changePosition"/>
+            <el-input v-model="transform.rotation.z" style="width: 60px" placeholder="z" @change="changePosition"/>
+          </div>
+        </div>
+        <div class="attribute-list">
+          <span>缩放:</span>
+          <div>
+            <el-input v-model="transform.scale.x" style="width: 60px" placeholder="x" @change="changePosition"/>
+            <el-input v-model="transform.scale.y" style="width: 60px" placeholder="y" @change="changePosition"/>
+            <el-input v-model="transform.scale.z" style="width: 60px" placeholder="z" @change="changePosition"/>
+          </div>
+        </div>
+        <div class="attribute-list">
+          <span>显示标签:</span>
+          <el-switch v-model="showLabel" />{{ showLabel ? '显示标签' : '隐藏标签' }}
+        </div>
+        <div class="attribute-list">
+          <span>模型名称:</span>
+          <el-input v-model="objName" style="width: 160px" @change="changeName" placeholder="模型名称" />
+        </div>
+      </el-collapse-item>
+      <el-collapse-item title="材质属性" name="2" :icon="CaretRight">
+        <div>
+          颜色：
+          <input type="color" :value="colorHex" @input="changeColor" />
+        </div>
+      </el-collapse-item>
+      <el-collapse-item title="动画" name="3" :icon="CaretRight">
+        <div class="attribute-list">
+          <span>显示动画:</span>
+        </div>
+      </el-collapse-item>
+      <el-collapse-item title="代码编辑" name="4" :icon="CaretRight">
+        <div class="attribute-list">
+          <span>代码编辑:</span>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
+  </div>
 </template>
 
 <script setup>
+import * as THREE from 'three';
 import { selectObjectInfoStore } from '@/store/modules/SelectObjectInfo'
-
+import { useSceneStore } from '@/store/scene.js'
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { CaretRight } from '@element-plus/icons-vue'
 const showLabel = ref(true)
-
+const sceneStore = useSceneStore();
 const emit = defineEmits(["update-modelValue"]);
-
 const objectInfo = selectObjectInfoStore();
-
 
 
 const transform = reactive({
@@ -72,46 +73,96 @@ const transform = reactive({
   rotation: objectInfo.transformData.rotation,
   scale: objectInfo.transformData.scale,
 })
-
-// 当本地 transform 改变时，通知父组件
-// watch(
-//   transform,
-//   () => {
-//     console.log(transform);
-//     emit('update-modelValue', {
-//       position: { ...transform.position },
-//       rotation: { ...transform.rotation },
-//       scale: { ...transform.scale },
-//     })
-//   },
-//   { deep: true }
-// )
-// emit("view-change", viewNames[faceIndex]);
+const objName = ref()
 const colorHex = computed(() => {
   const color = objectInfo?.material?.color;
-  // return color ? `#${color.getHexString()}` : '#ffffff';
   return color
 });
+const changePosition = ()=>{
+  if (sceneStore.selectedObject) {
+    console.log(123);
+    updateModelValue()
+  }
+}
 function changeColor(e) {
   objectInfo.material.color = e.target.value
   objectInfo.updateObjectColor(e.target.value)
-  // objectInfo.material.color.set(e.target.value);
 }
+const changeName = () => {
+  if (sceneStore.selectedObject) {
+    sceneStore.selectedObject.name =  objName.value
+  }
+}
+const updateModelValue = ()=>{
+  sceneStore.selectedObject.position.x = transform.position.x
+  sceneStore.selectedObject.position.y = transform.position.y
+  sceneStore.selectedObject.position.z = transform.position.z
+  sceneStore.selectedObject.rotation.x = transform.rotation.x * THREE.MathUtils.DEG2RAD
+  sceneStore.selectedObject.rotation.y = transform.rotation.y * THREE.MathUtils.DEG2RAD
+  sceneStore.selectedObject.rotation.z = transform.rotation.z * THREE.MathUtils.DEG2RAD
+  sceneStore.selectedObject.scale.x = transform.scale.x
+  sceneStore.selectedObject.scale.y = transform.scale.y
+  sceneStore.selectedObject.scale.z = transform.scale.z
+}
+watch(() => showLabel.value, (newValue, oldValue) => {
+  const label = findLabelByUUID(sceneStore.selectedObjectId)
+  if (label) {
+    label.visible = newValue;
+  }
+})
+function findLabelByUUID(uuid) {
+  const myScene = sceneStore.scene
+  const object = myScene.getObjectByProperty('uuid', uuid);
+  if (!object) return null;
+
+  // 查找这个 object 的子对象中有没有 CSS2DObject
+  const label = object.children.find(child => child instanceof CSS2DObject);
+  return label || null;
+}
+
+onMounted(() => {
+  // objName = sceneStore.selectedObject.name
+})
+watch(() => sceneStore.selectedObject, (newValue, oldValue) => {
+  console.log(newValue);
+  if (sceneStore.selectedObject) {
+    objName.value = newValue.name
+  }
+})
 </script>
 
 <style lang="scss" scoped>
-:deep(.object-transform-panel){
-  box-shadow: none;
+:deep(.el-collapse-item__header){
+  font-weight: bold;
 }
-.object-transform-panel {
+.right-side{
   position: absolute;
   right: 0;
   top: 40px;
   width: 300px;
-  background: #f5f7fa;
-  padding: 16px;
+  height: calc(100vh - 40px);
+  overflow: auto;
+  // background: #f5f7fa;
+  padding: 10px;
   box-sizing: border-box;
+  .attribute-list{
+    span{
+      width: 80px;
+    }
+    display: flex;
+    padding: 4px 0;
+    align-items: center;
+  }
 }
+// .object-transform-panel {
+//   position: absolute;
+//   right: 0;
+//   top: 40px;
+//   width: 300px;
+//   background: #f5f7fa;
+//   padding: 16px;
+//   box-sizing: border-box;
+// }
 .section {
   margin-bottom: 16px;
 }
@@ -121,92 +172,3 @@ function changeColor(e) {
   color: #333;
 }
 </style>
-<!-- <template>
-  <div class="panel" v-if="object">
-    <h3>物体属性</h3>
-
-    <label>
-      名称：
-      <input v-model="object.name" type="text" />
-    </label>
-
-    <label>
-      颜色：
-      <input type="color" :value="colorHex" @input="changeColor" />
-    </label>
-
-    <fieldset>
-      <legend>位置</legend>
-      <input type="number" v-model.number="object.position.x" step="0.1" />
-      <input type="number" v-model.number="object.position.y" step="0.1" />
-      <input type="number" v-model.number="object.position.z" step="0.1" />
-    </fieldset>
-
-    <fieldset>
-      <legend>缩放</legend>
-      <input type="number" v-model.number="object.scale.x" step="0.1" />
-      <input type="number" v-model.number="object.scale.y" step="0.1" />
-      <input type="number" v-model.number="object.scale.z" step="0.1" />
-    </fieldset>
-
-    <label>
-      可见性：
-      <input type="checkbox" v-model="object.visible" />
-    </label>
-  </div>
-</template>
-
-<script setup>
-
-import { selectObjectInfoStore } from '@/store/modules/SelectObjectInfo'
-
-const props = defineProps({
-  object: Object,
-});
-
-const colorHex = computed(() => {
-  const color = props.object?.material?.color;
-  return color ? `#${color.getHexString()}` : '#ffffff';
-});
-
-function changeColor(e) {
-  props.object.material.color.set(e.target.value);
-}
-</script>
-
-<style scoped>
-.panel {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 220px;
-  background: #9b0b0b;
-  border: 1px solid #ccc;
-  padding: 12px;
-  font-size: 14px;
-  z-index: 100;
-}
-
-.panel h3 {
-  margin-top: 0;
-}
-
-label,
-fieldset {
-  display: block;
-  margin-bottom: 10px;
-}
-
-input[type='text'],
-input[type='number'],
-input[type='color'] {
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 4px;
-}
-
-fieldset input {
-  width: 32%;
-  margin-right: 2%;
-}
-</style> -->

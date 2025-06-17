@@ -3,18 +3,19 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls'
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-
-
-
+import { selectObjectInfoStoreWithOut } from '@/store/modules/SelectObjectInfo.js'
+import { useSceneStoreWithOut } from '@/store/scene.js'
+const objectInfo = selectObjectInfoStoreWithOut();
+const useSceneStroe = useSceneStoreWithOut()
 
 // import Stats from 'three/examples/jsm/libs/stats.module.js' // 可选调试
-
-let modlist = []; //场景模型列表
+// let modlist = []; //场景模型列表
 export default class SceneManager {
   constructor(container) {
     this.container = container
-    this.modlist = modlist
+    // this.modlist = modlist
     this.scene = new THREE.Scene()
+    // this.scene = sceneStore.scene
     this.scene.background = new THREE.Color(0xeeeeee)
 
     this.camera = new THREE.PerspectiveCamera(
@@ -83,10 +84,9 @@ export default class SceneManager {
     this.labelRenderer.render(this.scene, this.camera);
   }
   _createLabeled(object3D){
-   console.log(object3D.uuid);
     const div = document.createElement('div');
     div.className = 'label';
-    div.textContent = object3D.name+"_"+object3D.uuid;
+    div.textContent = "uuid: "+object3D.uuid;
     div.style.marginTop = '-1em';
     div.style.backgroundColor = 'rgba(0,0,0,0.4)'
     div.style.borderRadius = '20px'
@@ -102,8 +102,12 @@ export default class SceneManager {
   addModel(object3D) {
     this.scene.add(object3D)
     this._createLabeled(object3D)
+    // objectInfo.selectedObjectId = object3D.uuid //更新选中物体UUID
+    useSceneStroe.selectedObject = object3D //更新选中物体
     this.transformControls.attach(object3D)//添加模型自动聚焦
-    modlist.push(object3D)
+    // modlist.push(object3D)
+    useSceneStroe.modeList.push(object3D)
+
   }
 
   //  清空场景（保留灯光等）

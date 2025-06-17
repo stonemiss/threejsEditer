@@ -1,19 +1,39 @@
 <template>
-  <div class="resource-panel">
-    <div class="resource" v-for="item in modelList" :key="item.type" >
-      <img :src="item.icon" :alt="item.label" draggable="true" :data-type="item.type" @dragstart="onDragStart"/>
-      {{ item.label }}
+  <div class="resource-content">
+    <!-- 场景图层列表 -->
+    <div class="sceneTree">
+      <SceneTree/>
     </div>
+    <!-- 场景资源列表 -->
+    <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+     <el-tab-pane label="资源库" name="first">
+      <div class="resource-panel">
+        <div class="resource" v-for="item in modelList" :key="item.type" >
+          <img :src="item.icon" :alt="item.label" draggable="true" :data-type="item.type" @dragstart="onDragStart"/>
+          {{ item.label }}
+        </div>
+      </div>
+     </el-tab-pane>
+     <el-tab-pane label="模型库" name="second">
+      <div>模型库</div>
+     </el-tab-pane>
+     <el-tab-pane label="标签库" name="third">
+      <div>标签库</div>
+     </el-tab-pane>
+
+   </el-tabs>
+   
   </div>
 </template>
 
 <script setup>
-const emit = defineEmits(["dragstart"]);
-
+import SceneTree from "@/components/leftaside/SceneTree.vue"; 
+const activeName = ref('first')
+// const emit = defineEmits(["dragstart"]);
 function onDragStart(e) {
   const type = e.target.dataset.type;
   e.dataTransfer.setData("type", type);
-  emit("dragstart", type);
+  // emit("dragstart", type);
 }
 
 const modelList = [
@@ -28,23 +48,32 @@ const modelList = [
   { type: 'tetrahedron', label: '四面体', icon: '/src/assets/models/tetrahedron.png' },
   { type: 'torusKnot', label: '圆环结', icon: '/src/assets/models/torusKnot.png' },
 ]
+const handleClick = (tab, event) => {
+  console.log(tab, event)
+}
 </script>
 
-<style scoped>
-
-.resource-panel {
+<style lang="scss" scoped>
+.resource-content{
   position: absolute;
   top: 40px;
   width: 300px;
   height: calc(100vh - 40px);
+  overflow: auto;
   background: #ffffff;
+  padding: 10px;
+  box-sizing: border-box;
+  .sceneTree{
+    height: 300px;
+  }
+}
+.resource-panel {
   display: flex;
   flex-flow: wrap;
-  /* flex-wrap: wrap; */
   justify-content: space-between;
   align-content: flex-start;
   color: #333333;
-  padding: 10px;
+  /* padding: 10px; */
   box-sizing: border-box;
 
 }

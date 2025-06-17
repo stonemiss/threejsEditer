@@ -27,7 +27,8 @@ import { markRaw } from 'vue';
 
 const containerRef = ref(null);
 // const scene = shallowRef(null); //shallowRef只遍历一层
-
+const selectedObject = ref();
+const mesh = markRaw(selectedObject); // 避免 Vue 响应式系统污染
 const objectInfo = selectObjectInfoStore();
 const transformInfo = reactive({
   position: objectInfo.transformData.position,
@@ -75,12 +76,16 @@ function changeCameraView(view) {
 }
 onMounted(() => {
   myScene = new sceneManager(containerRef.value)
+  
   sceneStore.scene = myScene.getScene();
+
   renderer.value = myScene.getRenderer();
   camera.value = myScene.getCamera();
   orbitControls = myScene.getControls();
   transformControls = myScene.transformControls;
   
+  sceneStore.selectedObject = selectedObject.value
+
   // ground = new THREE.Mesh(
   //   new THREE.PlaneGeometry(100, 100),
   //   new THREE.MeshStandardMaterial({ color: 0x333333 })
@@ -132,26 +137,26 @@ onMounted(() => {
 
 
     if (intersects.length > 0) {
-      if (sceneStore.selectedObject) {
-        sceneStore.selectedObject.material.emissive?.set(0x000000); // 清除上一个高亮
+      if (selectedObject.value) {
+        selectedObject.value.material.emissive?.set(0x000000); // 清除上一个高亮
       }
-      sceneStore.selectedObject = intersects[0].object
+      selectedObject.value = intersects[0].object
 
-      if (!sceneStore.selectedObject.material.emissive) {
-        sceneStore.selectedObject.material = new THREE.MeshStandardMaterial({
-          color: sceneStore.selectedObject.material.color,
+      if (!selectedObject.value.material.emissive) {
+        selectedObject.value.material = new THREE.MeshStandardMaterial({
+          color: selectedObject.value.material.color,
         });
       }
       // console.log("选中对象：", selectedObject.value);
       // selectedObject.value.material.emissive.set(0xffff00); // 高亮颜色
-      transformControls.attach(sceneStore.selectedObject);
-      const newcolor = `#${sceneStore.selectedObject.material.color.getHexString()}`;
+      transformControls.attach(selectedObject.value);
+      const newcolor = `#${selectedObject.value.material.color.getHexString()}`;
       // objectInfo.selectObject(intersects[0].object.uuid)//更新选中物体id;
       sceneStore.selectedObject = intersects[0].object//更新选中物体id;
-      objectInfo.updateObjectInfo(sceneStore.selectedObject)//更新移动信息;
+      // objectInfo.updateObjectInfo(selectedObject.value)//更新移动信息;
 
     }else {
-      sceneStore.selectedObject = null
+      selectedObject.value = null
       // objectInfo.selectObject('')
       sceneStore.selectedObjectId = ''
       transformControls.detach()
@@ -183,7 +188,7 @@ function onDrop(event) {
 }
 //添加资源模型
 function addResourceModel(type, event) {
-  sceneStore.selectedObject = ''//清楚选中模型
+  selectedObject.value = ''//清楚选中模型
   const rect = renderer.value.domElement.getBoundingClientRect()
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
@@ -218,76 +223,94 @@ function addResourceModel(type, event) {
     mesh.position.y += 0.5
     assignMeshNames(mesh)//更新模型名称
     myScene.addModel(mesh)
-    sceneStore.selectedObject = mesh//添加完模型默认选中
+    selectedObject.value = mesh//添加完模型默认选中
   }
 }
 
+function createLabeledBox(id, position, labelText) {
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const box = new THREE.Mesh(geometry, material);
+  box.name = id;
+  box.position.copy(position);
+  myScene.addModel(box);
 
+  const div = document.createElement('div');
+  div.className = 'label';
+  div.textContent = labelText;
+  div.style.marginTop = '-1em';
+  const label = new CSS2DObject(div);
+  label.position.set(0, 1, 0); // 标签位置偏上
+  box.add(label);
+}
+
+
+
+
+
+const updateModelValue = (val)=>{
+  selectedObject.value.position.x = val.position.x
+  selectedObject.value.position.y = val.position.y
+  selectedObject.value.position.z = val.position.z
+  selectedObject.value.rotation.x = val.rotation.x * THREE.MathUtils.DEG2RAD
+  selectedObject.value.rotation.y = val.rotation.y * THREE.MathUtils.DEG2RAD
+  selectedObject.value.rotation.z = val.rotation.z * THREE.MathUtils.DEG2RAD
+  selectedObject.value.scale.x = val.scale.x
+  selectedObject.value.scale.y = val.scale.y
+  selectedObject.value.scale.z = val.scale.z
+}
 // 更新颜色
 const updateModelColor =(val)=>{
-  sceneStore.selectedObject?.material.color.set(val);
+  selectedObject.value?.material.color.set(val);
 }
 // 删除选中
 function onKeyDown(event) {
   if (event.key === 'Delete' || event.key === 'Backspace') {
+    if (!transformControls.object) return
     
-    const active = document.activeElement
-    const tag = active?.tagName.toLowerCase()
-    if ((tag === 'input' || tag === 'textarea' || active?.isContentEditable)) {
-      return // 正在输入，忽略 Delete
-    }
-    if (transformControls.object) {
-      
-      const target = transformControls.object
-        // 移除所有 CSS2D 子对象
-        target.children.forEach(child => {
-          if (child.isCSS2DObject) {
-            target.remove(child)
-            sceneStore.scene.remove(child)// 防止直接 add 到 scene 的情况
-          }
-        })
-      transformControls.detach()
-      sceneStore.scene.remove(target)//  移除本体
-        // 从数组中移除该物体
-      const index = sceneStore.modeList.indexOf(target)
-      if (index !== -1) sceneStore.modeList.splice(index, 1)
-    }
+    const target = transformControls.object
+      // 移除所有 CSS2D 子对象
+      target.children.forEach(child => {
+        if (child.isCSS2DObject) {
+          target.remove(child)
+          sceneStore.scene.remove(child)// 防止直接 add 到 scene 的情况
+        }
+      })
+    transformControls.detach()
+    sceneStore.scene.remove(target)//  移除本体
+      // 从数组中移除该物体
+    const index = sceneStore.modeList.indexOf(target)
+    if (index !== -1) sceneStore.modeList.splice(index, 1)
     
   }
 }
 
-// watch(
-//   transformInfo,
-//   () => {
-//     if (sceneStore.selectedObject) {
-//       updateModelValue(transformInfo)
-//       // emit('update-modelValue', {
-//       //   position: { ...transform.position },
-//       //   rotation: { ...transform.rotation },
-//       //   scale: { ...transform.scale },
-//       // })
-//     }
-//   },
-//   { deep: true }
-// )
+watch(
+  transformInfo,
+  () => {
+    if (selectedObject.value) {
+      updateModelValue(transformInfo)
+      // emit('update-modelValue', {
+      //   position: { ...transform.position },
+      //   rotation: { ...transform.rotation },
+      //   scale: { ...transform.scale },
+      // })
+    }
+  },
+  { deep: true }
+)
 watch(() => objectInfo.material.color, (newValue, oldValue) => {
-  if (sceneStore.selectedObject) {
+  if (selectedObject.value) {
     updateModelColor(newValue)
   }
 })
 // 监听选中物体id更新控制器选中
 watch(() => sceneStore.sceneTreeUid, (newValue, oldValue) => {
+  console.log(newValue);
   const object = sceneStore.scene.getObjectByProperty('uuid', newValue);
   if (!object) return;
-  console.log(object);
-  transformControls.detach()
   transformControls.attach(object);
 })
-onUnmounted(() => {
-  window.removeEventListener('keydown', onKeyDown);
-  sceneStore.dispose()
-});
-
 </script>
 
 
