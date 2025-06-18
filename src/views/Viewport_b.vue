@@ -108,6 +108,10 @@ gridHelper.position.y = -0.5; // 放在地面上方
 sceneStore.scene.add(gridHelper);
 
 
+//环境光:没有特定方向，整体改变场景的光照明暗
+const ambient = new THREE.AmbientLight(0xffffff, 1);
+sceneStore.scene.add(ambient);
+
 
 
 
