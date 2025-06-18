@@ -1,35 +1,3 @@
-<!-- <template>
-  <el-tree
-    style="max-width: 400px"
-    :data="modeList"
-    :props="defaultProps"
-    @node-click="getUID"
-  />
-</template>
-
-<script  setup>
-import sceneManager  from "@/core/three/sceneManager.js";
-import { useSceneStore } from '@/store/scene.js'
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-const sceneStore = useSceneStore();
-const getUID = (data) => {
-  sceneStore.selectedObject = data //更新选中物体
-  sceneStore.sceneTreeUid = data.uuid //更新选中物体UID
-}
-const modeList = sceneStore.modeList;
-onMounted(() => {
-
-  
-});
-
-const defaultProps = {
-  children: 'children',
-  label: 'name',
-}
-</script>
-<style lang="scss" scoped>
-
-</style> -->
 <template>
   <el-tree
     :data="modeList"
