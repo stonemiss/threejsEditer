@@ -88,22 +88,30 @@ onMounted(() => {
   // ground.rotation.x = -Math.PI / 2
   // ground.name = 'ground'
   // myScene.addModel(ground)
+// 设置纯色背景（示例：深空蓝）
+sceneStore.scene.background = new THREE.Color(0x0a192f); 
 
-  // 添加立方体
-  const geometry = new THREE.BoxGeometry();
-  const material1 = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-  const material2 = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+// 创建网格辅助线（参数：尺寸, 细分数量, 主颜色, 次颜色）
+const gridHelper = new THREE.GridHelper(
+  20, // 尺寸（覆盖 XZ 平面，范围 [-10, 10]）
+  20, // 细分数量（每边 20 段，共 21 条线）
+  0xffffff, // 主网格线颜色（白色）
+  0x444444  // 次网格线颜色（浅灰）
+);
 
-  const cube1 = new THREE.Mesh(geometry, material1);
-  cube1.position.x = -2;
+// 调整网格位置（默认在场景中心）
+gridHelper.position.y = -0.5; // 放在地面上方
+// gridHelper.material.opacity = 0.5; // 半透明
+// gridHelper.material.transparent = true;
 
-  const cube2 = new THREE.Mesh(geometry, material2);
-  cube2.position.x = 2;
-  // sceneStore.addModelToScene(cube1)
-  // transformControls.attach(cube1);
+// 添加到场景
+sceneStore.scene.add(gridHelper);
 
-  // myScene.addModel(cube1)
-  // myScene.addModel(cube2)
+
+
+
+
+
 
 
   // 点击选择对象
@@ -167,9 +175,9 @@ onMounted(() => {
     }
   });
   // drop 监听资源拖入
-  const canvas = renderer.value.domElement
-  canvas.addEventListener('dragover', e => e.preventDefault())
-  canvas.addEventListener('drop', onDrop)
+  const canvasDom = renderer.value.domElement
+  canvasDom.addEventListener('dragover', e => e.preventDefault())
+  canvasDom.addEventListener('drop', onDrop)
   
   // 监听按键删除
   window.addEventListener('keydown', onKeyDown)
