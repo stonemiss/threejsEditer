@@ -16,7 +16,7 @@ export default class SceneManager {
     // this.modlist = modlist
     this.scene = new THREE.Scene()
     // this.scene = sceneStore.scene
-    this.scene.background = new THREE.Color(0xeeeeee)
+    this.scene.background = new THREE.Color(0x0a192f)
 
     this.camera = new THREE.PerspectiveCamera(
       75,
@@ -130,9 +130,17 @@ export default class SceneManager {
     })
   }
 
-  // 网格辅助线
-  addGridHelper(size = 10, divisions = 10) {
-    const grid = new THREE.GridHelper(size, divisions)
+  // 网格辅助线  
+  // size -- 坐标格尺寸. 默认为 10.
+// divisions -- 坐标格细分次数. 默认为 10.
+// colorCenterLine -- 中线颜色. 值可以为 Color 类型, 16进制 和 CSS 颜色名. 默认为 0x444444
+// // colorGrid -- 坐标格网格线颜色. 值可以为 Color 类型, 16进制 和 CSS 颜色名. 默认为 0x888888
+  addGridHelper(size = 20, divisions = 20, colorCenterLine = 0xffffff, colorGrid = 0x444444 ) {
+    const grid = new THREE.GridHelper(size, divisions,colorCenterLine,colorGrid)
+    // 调整网格位置（默认在场景中心）
+    grid.position.y = -0.5; // 放在地面上方
+    // grid.material.opacity = 0.5; // 半透明
+// grid.material.transparent = true;
     this.scene.add(grid)
   }
 

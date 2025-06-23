@@ -80,35 +80,9 @@ onMounted(() => {
   camera.value = myScene.getCamera();
   orbitControls = myScene.getControls();
   transformControls = myScene.transformControls;
+
+  myScene.addGridHelper(20, 20);
   
-
-// 设置纯色背景（示例：深空蓝）
-sceneStore.scene.background = new THREE.Color(0x0a192f); 
-
-// 创建网格辅助线（参数：尺寸, 细分数量, 主颜色, 次颜色）
-const gridHelper = new THREE.GridHelper(
-  20, // 尺寸（覆盖 XZ 平面，范围 [-10, 10]）
-  20, // 细分数量（每边 20 段，共 21 条线）
-  0xffffff, // 主网格线颜色（白色）
-  0x444444  // 次网格线颜色（浅灰）
-);
-
-// 调整网格位置（默认在场景中心）
-gridHelper.position.y = -0.5; // 放在地面上方
-// gridHelper.material.opacity = 0.5; // 半透明
-// gridHelper.material.transparent = true;
-
-// 添加到场景
-sceneStore.scene.add(gridHelper);
-
-
-//环境光:没有特定方向，整体改变场景的光照明暗
-const ambient = new THREE.AmbientLight(0xffffff, 1);
-sceneStore.scene.add(ambient);
-
-
-
-
 
 
 
