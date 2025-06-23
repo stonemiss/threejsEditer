@@ -1,7 +1,7 @@
 <template>
   <div ref="containerRef" class="three-container">
     <TransformToolbar @mode-change="onModeChange" />
-    <ViewGizmo @view-change="changeCameraView" /> 
+    <!-- <ViewGizmo @view-change="changeCameraView" />  -->
     <!-- <ObjectLabel
       :object3D="mesh"
       :camera="camera"
@@ -81,13 +81,7 @@ onMounted(() => {
   orbitControls = myScene.getControls();
   transformControls = myScene.transformControls;
   
-  // ground = new THREE.Mesh(
-  //   new THREE.PlaneGeometry(100, 100),
-  //   new THREE.MeshStandardMaterial({ color: 0x333333 })
-  // )
-  // ground.rotation.x = -Math.PI / 2
-  // ground.name = 'ground'
-  // myScene.addModel(ground)
+
 // 设置纯色背景（示例：深空蓝）
 sceneStore.scene.background = new THREE.Color(0x0a192f); 
 
